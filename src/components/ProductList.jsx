@@ -12,6 +12,13 @@ export default function ProductList({ user, onLogout }) {
   const [formFor, setFormFor] = useState(null); // null = closed, {} = add, product = edit
   const isAdmin = user?.role === 'admin';
 
+  const stats = {
+    totalProducts: products.length,
+    totalUnits: products.reduce((sum, p) => sum + Number(p.quantity || 0), 0),
+    totalValue: products.reduce((sum, p) => sum + Number(p.price || 0) * Number(p.quantity || 0), 0),
+    lowStock: products.filter((p) => Number(p.quantity || 0) <= 5).length,
+  };
+
   const load = useCallback(async () => {
     setLoading(true);
     try {
@@ -54,23 +61,53 @@ export default function ProductList({ user, onLogout }) {
   };
 
   return (
-    <div className="container">
-      <header>
-        <h1>Products</h1>
+    <div className="container dashboard-shell">
+      <header className="app-header card">
+        <div>
+          <p className="eyebrow">Inventory overview</p>
+          <h1>Products</h1>
+        </div>
         <div className="header-right">
-          <span className="muted">Signed in as <strong>{user.username}</strong></span>
+          <div className="user-pill">
+            <span className="dot" />
+            <span>{user.username}</span>
+          </div>
           <button className="secondary" onClick={onLogout}>Logout</button>
         </div>
       </header>
 
+      <div className="stats-grid">
+        <div className="stat-card card">
+          <span>Total products</span>
+          <strong>{stats.totalProducts}</strong>
+        </div>
+        <div className="stat-card card">
+          <span>Units in stock</span>
+          <strong>{stats.totalUnits}</strong>
+        </div>
+        <div className="stat-card card">
+          <span>Inventory value</span>
+          <strong>{peso.format(stats.totalValue)}</strong>
+        </div>
+        <div className="stat-card card warn">
+          <span>Low stock</span>
+          <strong>{stats.lowStock}</strong>
+        </div>
+      </div>
+
       {error && <div className="alert error">{error}</div>}
       {notice && <div className="alert success" onClick={() => setNotice('')}>{notice}</div>}
 
-      {isAdmin && (
-        <div className="toolbar">
-          <button onClick={() => setFormFor({})}>+ Add product</button>
+      <div className="toolbar card">
+        <div className="toolbar-copy">
+          <h2>{isAdmin ? 'Manage inventory' : 'View inventory'}</h2>
+          {!isAdmin && <span className="role-tag">Read-only access</span>}
         </div>
-      )}
+
+        {isAdmin && (
+          <button onClick={() => setFormFor({})}>+ Add product</button>
+        )}
+      </div>
 
       <div className="card table-wrap">
         {loading ? <p className="center">Loading…</p> : (
@@ -94,9 +131,11 @@ export default function ProductList({ user, onLogout }) {
                 <tr key={p.id}>
                   <td>{p.id}</td>
                   <td><strong>{p.product_name}</strong></td>
-                  <td className="muted">{p.description}</td>
+                  <td className="muted description-cell">{p.description}</td>
                   <td className="num">{peso.format(p.price)}</td>
-                  <td className="num">{p.quantity}</td>
+                  <td className="num">
+                    <span className={Number(p.quantity || 0) <= 5 ? 'stock-pill low' : 'stock-pill'}>{p.quantity}</span>
+                  </td>
                   <td className="muted">{p.created_at}</td>
                   {isAdmin && (
                     <td className="actions">

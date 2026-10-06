@@ -73,6 +73,12 @@ export const me = async () => (await api.get('/me')).data.user;
 
 // ---- products --------------------------------------------------------------
 export const getProducts = async () => (await api.get('/products')).data.data;
-export const createProduct = (p) => api.post('/products', p);
-export const updateProduct = (id, p) => api.put(`/products/${id}`, p);
+export const createProduct = async (p) => {
+  const { data } = await api.post('/products', p);
+  return data.data;
+};
+export const updateProduct = async (id, p) => {
+  const { data } = await api.put(`/products/${id}`, p);
+  return data.data;
+};
 export const deleteProduct = (id) => api.delete(`/products/${id}`);

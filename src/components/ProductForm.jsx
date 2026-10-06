@@ -21,8 +21,8 @@ export default function ProductForm({ product, onSaved, onCancel }) {
       quantity: form.quantity,
     };
     try {
-      editing ? await updateProduct(product.id, payload) : await createProduct(payload);
-      onSaved(editing ? 'Product updated.' : 'Product added.');
+      const savedProduct = editing ? await updateProduct(product.id, payload) : await createProduct(payload);
+      onSaved(editing ? 'Product updated.' : 'Product added.', savedProduct);
     } catch (err) {
       setError(errorMessage(err));
       setBusy(false);
